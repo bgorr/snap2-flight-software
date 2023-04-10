@@ -2,6 +2,15 @@ import stapipy as st
 import cv2
 import numpy as np
 
+class Band():
+    int ColAvg
+    int RowAvg
+    int Col
+    int Row
+    int ColInc
+    int RowInc
+
+
 class VNIRCamera():
     def __init__(self):
         st.initialize()
@@ -86,5 +95,148 @@ class VNIRCamera():
 
         # Stop the image acquisition of the host side
         st_datastream.stop_acquisition()
+        image_tuple = self.demosaic(nparr)
+        return image_tuple
 
-        return nparr
+    def demosaic(self,image):
+        col_avg = 1
+        row_avg = 1
+        col_inc = 4
+        row_inc = 4
+        red_col = 0
+        red_row = 0
+        green_col = 0
+        green_row = 2
+        blue_col = 2
+        blue_row = 0
+        nir_col = 2
+        nir_row = 2
+        red = np.zeros(shape=(512,512))
+        green = np.zeros(shape=(512,512))
+        blue = np.zeros(shape=(512,512))
+        nir = np.zeros(shape=(512,512))
+        int imageRows = 2048
+        int imageCols = 2048
+        int s = 2048*2048
+        # demosaic the image - image will be smaller by a factor related to dr and dc
+        int sum
+        int n
+        int r
+        int tr
+        int c
+        int tc
+        int kr
+        int kc
+        int kci
+        int kri
+        int avg
+        int sindex
+
+        r = red_row
+        for tr in range(imageRows/row_inc):
+            c = red_col
+            for tc in range(imageCols/col_inc):
+                sum = 0
+                n = 0
+                kr = r
+                for kri in range(row_avg):
+                    kc = c
+                    for kci in range(col_avg):
+                        sindex = imageCols * kr + kc
+                        if (sindex > s)
+                            break
+                        sum+=image[kr,kc]
+                        n += 1
+                        kc += 1
+                    kr += 1
+                if n ~= 0:
+                    avg = sum/n
+                else:
+                    avg = 0
+                if avg > 255:
+                    avg = 255
+                red[tr,tc] = avg
+                c += col_inc
+            r += row_inc
+        
+        r = green_row
+        for tr in range(imageRows/row_inc):
+            c = green_col
+            for tc in range(imageCols/col_inc):
+                sum = 0
+                n = 0
+                kr = r
+                for kri in range(row_avg):
+                    kc = c
+                    for kci in range(col_avg):
+                        sindex = imageCols * kr + kc
+                        if (sindex > s)
+                            break
+                        sum+=image[kr,kc]
+                        n += 1
+                        kc += 1
+                    kr += 1
+                if n ~= 0:
+                    avg = sum/n
+                else:
+                    avg = 0
+                if avg > 255:
+                    avg = 255
+                green[tr,tc] = avg
+                c += col_inc
+            r += row_inc
+
+        r = blue_row
+        for tr in range(imageRows/row_inc):
+            c = blue_col
+            for tc in range(imageCols/col_inc):
+                sum = 0
+                n = 0
+                kr = r
+                for kri in range(row_avg):
+                    kc = c
+                    for kci in range(col_avg):
+                        sindex = imageCols * kr + kc
+                        if (sindex > s)
+                            break
+                        sum+=image[kr,kc]
+                        n += 1
+                        kc += 1
+                    kr += 1
+                if n ~= 0:
+                    avg = sum/n
+                else:
+                    avg = 0
+                if avg > 255:
+                    avg = 255
+                blue[tr,tc] = avg
+                c += col_inc
+            r += row_inc
+        
+        r = nir_row
+        for tr in range(imageRows/row_inc):
+            c = nir_col
+            for tc in range(imageCols/col_inc):
+                sum = 0
+                n = 0
+                kr = r
+                for kri in range(row_avg):
+                    kc = c
+                    for kci in range(col_avg):
+                        sindex = imageCols * kr + kc
+                        if (sindex > s)
+                            break
+                        sum+=image[kr,kc]
+                        n += 1
+                        kc += 1
+                    kr += 1
+                if n ~= 0:
+                    avg = sum/n
+                else:
+                    avg = 0
+                if avg > 255:
+                    avg = 255
+                nir[tr,tc] = avg
+                c += col_inc
+            r += row_inc
+        return (red, green, blue, nir)
