@@ -2,24 +2,18 @@ import stapipy as st
 import cv2
 import numpy as np
 
-class Band():
-    int ColAvg
-    int RowAvg
-    int Col
-    int Row
-    int ColInc
-    int RowInc
-
-
 class VNIRCamera():
     def __init__(self):
         st.initialize()
         st_system = st.create_system()
         self.st_device = st_system.create_first_device()
         print('Device=', self.st_device.info.display_name)
+
+    def run_adaptive_exposure(self):
+        print("Running adaptive exposure!") # TODO
     
     def get_image(self):
-        DISPLAY_RESIZE_FACTOR = 0.3
+        #DISPLAY_RESIZE_FACTOR = 0.3
         st_datastream = self.st_device.create_datastream()
         st_datastream.start_acquisition(1)
 
@@ -81,11 +75,11 @@ class VNIRCamera():
                             nparr = cv2.cvtColor(nparr, cv2.COLOR_BAYER_BG2RGB)
 
                     # Resize image.and display.
-                    nparr = cv2.resize(nparr, None,
-                                    fx=DISPLAY_RESIZE_FACTOR,
-                                    fy=DISPLAY_RESIZE_FACTOR)
-                    cv2.imshow('image', nparr)
-                    cv2.waitKey(1)
+                    # nparr = cv2.resize(nparr, None,
+                    #                 fx=DISPLAY_RESIZE_FACTOR,
+                    #                 fy=DISPLAY_RESIZE_FACTOR)
+                    # cv2.imshow('image', nparr)
+                    # cv2.waitKey(1)
                 else:
                     # If the acquired data contains no image data.
                     print("Image data does not exist.")
@@ -115,27 +109,16 @@ class VNIRCamera():
         green = np.zeros(shape=(512,512))
         blue = np.zeros(shape=(512,512))
         nir = np.zeros(shape=(512,512))
-        int imageRows = 2048
-        int imageCols = 2048
-        int s = 2048*2048
+        imageRows = 2048
+        imageCols = 2048
+        s = 2048*2048
+        print(image.shape)
         # demosaic the image - image will be smaller by a factor related to dr and dc
-        int sum
-        int n
-        int r
-        int tr
-        int c
-        int tc
-        int kr
-        int kc
-        int kci
-        int kri
-        int avg
-        int sindex
 
         r = red_row
-        for tr in range(imageRows/row_inc):
+        for tr in range(int(imageRows/row_inc)):
             c = red_col
-            for tc in range(imageCols/col_inc):
+            for tc in range(int(imageCols/col_inc)):
                 sum = 0
                 n = 0
                 kr = r
@@ -143,13 +126,13 @@ class VNIRCamera():
                     kc = c
                     for kci in range(col_avg):
                         sindex = imageCols * kr + kc
-                        if (sindex > s)
+                        if (sindex > s):
                             break
                         sum+=image[kr,kc]
                         n += 1
                         kc += 1
                     kr += 1
-                if n ~= 0:
+                if n != 0:
                     avg = sum/n
                 else:
                     avg = 0
@@ -160,9 +143,9 @@ class VNIRCamera():
             r += row_inc
         
         r = green_row
-        for tr in range(imageRows/row_inc):
+        for tr in range(int(imageRows/row_inc)):
             c = green_col
-            for tc in range(imageCols/col_inc):
+            for tc in range(int(imageCols/col_inc)):
                 sum = 0
                 n = 0
                 kr = r
@@ -170,13 +153,13 @@ class VNIRCamera():
                     kc = c
                     for kci in range(col_avg):
                         sindex = imageCols * kr + kc
-                        if (sindex > s)
+                        if (sindex > s):
                             break
                         sum+=image[kr,kc]
                         n += 1
                         kc += 1
                     kr += 1
-                if n ~= 0:
+                if n != 0:
                     avg = sum/n
                 else:
                     avg = 0
@@ -187,9 +170,9 @@ class VNIRCamera():
             r += row_inc
 
         r = blue_row
-        for tr in range(imageRows/row_inc):
+        for tr in range(int(imageRows/row_inc)):
             c = blue_col
-            for tc in range(imageCols/col_inc):
+            for tc in range(int(imageCols/col_inc)):
                 sum = 0
                 n = 0
                 kr = r
@@ -197,13 +180,13 @@ class VNIRCamera():
                     kc = c
                     for kci in range(col_avg):
                         sindex = imageCols * kr + kc
-                        if (sindex > s)
+                        if (sindex > s):
                             break
                         sum+=image[kr,kc]
                         n += 1
                         kc += 1
                     kr += 1
-                if n ~= 0:
+                if n != 0:
                     avg = sum/n
                 else:
                     avg = 0
@@ -214,9 +197,9 @@ class VNIRCamera():
             r += row_inc
         
         r = nir_row
-        for tr in range(imageRows/row_inc):
+        for tr in range(int(imageRows/row_inc)):
             c = nir_col
-            for tc in range(imageCols/col_inc):
+            for tc in range(int(imageCols/col_inc)):
                 sum = 0
                 n = 0
                 kr = r
@@ -224,13 +207,13 @@ class VNIRCamera():
                     kc = c
                     for kci in range(col_avg):
                         sindex = imageCols * kr + kc
-                        if (sindex > s)
+                        if (sindex > s):
                             break
                         sum+=image[kr,kc]
                         n += 1
                         kc += 1
                     kr += 1
-                if n ~= 0:
+                if n != 0:
                     avg = sum/n
                 else:
                     avg = 0
