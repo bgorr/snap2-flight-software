@@ -1,42 +1,42 @@
 import VNIRCamera
-import SWIRCamera
+#import SWIRCamera
 import IMU
 import NeuralNet
 import INSMessages
 import Thermal
 import GimbalControl
 import Watchdog
+import Controller
 import numpy as np
-
-
-def save_telemetry(tel,count):
-    print("Saving telemetry")
-
-def save_imagery(vnir_images,swir_image,mask_image,count):
-    np.savetxt("./images/red_"+str(count)+".csv", vnir_images[0].astype(int), delimiter=",",fmt="%d")
-    np.savetxt("./images/green_"+str(count)+".csv", vnir_images[1].astype(int), delimiter=",",fmt="%d")
-    np.savetxt("./images/blue_"+str(count)+".csv", vnir_images[2].astype(int), delimiter=",",fmt="%d")
-    np.savetxt("./images/nir_"+str(count)+".csv", vnir_images[3].astype(int), delimiter=",",fmt="%d")
-    np.savetxt("./images/mask_"+str(count)+".csv", mask_image.astype(int), delimiter=",",fmt="%d")
+import Jetson.GPIO as GPIO
+import os
 
 def main():
-    #imu = IMU.IMU()
-    vnir_cam = VNIRCamera.VNIRCamera()
-    neural_net = NeuralNet.NeuralNet()
-    ins_messages = INSMessages.INSMessages()
-    #thermal = Thermal.Thermal()
-    #swir_cam = SWIRCamera.SWIRCamera()
-    #gimbal_control = GimbalControl.GimbalControl()
-    #watchdog = Watchdog.Watchdog()
-
-    for i in range(0,10):
-        telemetry = []
-        print("xd")
-        #print(imu.get_ypr())
-        #print(vnir_cam.get_image())
-        vnir_image = vnir_cam.get_image()
-        mask, x, y = neural_net.run_nn(vnir_image)
-        save_imagery(vnir_image,None,mask,i)
+    directoryCount = 0
+    directoryCreated = False
+    while(directoryCreated == False):
+        dirPath = "./runs/run"+str(directoryCount)
+        try:
+            os.mkdir(dirPath)
+            directoryCreated = True
+        except:
+            directoryCount += 1
+    try:
+        controller = Controller.Controller(dirPath)
+        gc = GimbalControl.GimbalControl()
+        gc.enable_driver()
+        while True:
+            gc.scan_pattern(controller)
+    except Exception as e:
+        gc.motor_alt_pwm.stop()
+        gc.motor_az_pwm.stop()
+        print(e)
+        e.printStackTrace()
+        GPIO.cleanup()
+    finally:
+        gc.motor_alt_pwm.stop()
+        gc.motor_az_pwm.stop()
+        GPIO.cleanup()
         
 
 if __name__ == "__main__":

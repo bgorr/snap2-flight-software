@@ -35,11 +35,12 @@ def get_centroid(image):
                 x_sum = x_sum + i
                 y_sum = y_sum + j
                 count = count + 1
-    print(count)
+    #print(count)
     if count > 0 and count < 1000:
         print("Plume detected!")
         x_loc = x_sum/count
         y_loc = y_sum/count
+        print((x_loc,y_loc))
         return (x_loc,y_loc)
     return(0,0)
 

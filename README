@@ -1,0 +1,126 @@
+Raven FCU SWICD Simulator
+-------------------------
+
+Current release supports only the PUB/SUB INS message
+To use the FCU SWICD emulator do the following:
+
+1. SSH to the Raven FCU SWICD SIM (raspberry pi):
+   % ssh pi@10.32.40.188
+     > id: pi
+     > password: stratospheric
+
+2. Change to the pi user's ~/SWICD directory: 
+    % cd ~/SWICD
+
+3. Issue the help option on the emulator program to get the details:
+    % ./ravenSWICDsimFCU -h
+
+SWICD simulator:
+  -h [ --help ]                         This help message
+  -i [ --input ] arg                    Input Raven binary INS data directory
+  -r [ --rate ] arg                     Playback rate. 0 equals fast as 
+                                        possible (100 Hz+)
+  -s [ --skip ] arg                     Number of seconds to skip forward from 
+                                        beginning of collection
+  -f [ --first ]                        Print out the first timestamp value for
+                                        the collection and end
+  -c [ --collection ]                   Print out full collection information 
+                                        details
+  -v [ --version ]                      Print the SWICD simulator version 
+                                        information
+  -l [ --logger ] arg (=logger.properties)
+                                        The logger file to use.
+
+
+4. Run the emulator with no offset at 10 Hz playback (this should causse it to skip 9 INS
+   messages for each one sent out since the original collection was recorded at 100 Hz)
+
+   pi@fcuswicd:~/SWICD $ ./ravenSWICDsimFCU -i collection_20170818 -c -r 10 -l logger.properties 
+
+Collection information:
+  File 1: collection_20170818/dmc_00001.ins
+    First ts: 1503061173.882125 (08/18/2017 12:59:33 GMT)
+    Last ts : 1503064781.138165 (08/18/2017 13:59:41 GMT)
+    Timespan: 3607.256040 seconds (01:00:07.256 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 2: collection_20170818/dmc_00002.ins
+    First ts: 1503064781.148204 (08/18/2017 13:59:41 GMT)
+    Last ts : 1503068382.848860 (08/18/2017 14:59:42 GMT)
+    Gap to previous ts : 0.010039
+    Timespan: 3601.700656 seconds (01:00:01.700 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 3: collection_20170818/dmc_00003.ins
+    First ts: 1503068382.858901 (08/18/2017 14:59:42 GMT)
+    Last ts : 1503071984.612932 (08/18/2017 15:59:44 GMT)
+    Gap to previous ts : 0.010041
+    Timespan: 3601.754031 seconds (01:00:01.754 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 4: collection_20170818/dmc_00004.ins
+    First ts: 1503071984.622965 (08/18/2017 15:59:44 GMT)
+    Last ts : 1503075591.284428 (08/18/2017 16:59:51 GMT)
+    Gap to previous ts : 0.010033
+    Timespan: 3606.661463 seconds (01:00:06.661 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 5: collection_20170818/dmc_00005.ins
+    First ts: 1503075591.294471 (08/18/2017 16:59:51 GMT)
+    Last ts : 1503079196.484872 (08/18/2017 17:59:56 GMT)
+    Gap to previous ts : 0.010043
+    Timespan: 3605.190401 seconds (01:00:05.190 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 6: collection_20170818/dmc_00006.ins
+    First ts: 1503079196.494903 (08/18/2017 17:59:56 GMT)
+    Last ts : 1503082810.008768 (08/18/2017 19:00:10 GMT)
+    Gap to previous ts : 0.010031
+    Timespan: 3613.513865 seconds (01:00:13.513 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 7: collection_20170818/dmc_00007.ins
+    First ts: 1503082810.018805 (08/18/2017 19:00:10 GMT)
+    Last ts : 1503086412.935403 (08/18/2017 20:00:12 GMT)
+    Gap to previous ts : 0.010037
+    Timespan: 3602.916598 seconds (01:00:02.916 HMS.S)
+    Bytes   : 0
+    Records : 0
+  File 8: collection_20170818/dmc_00008.ins
+    First ts: 1503086412.945422 (08/18/2017 20:00:12 GMT)
+    Last ts : 1503087284.944399 (08/18/2017 20:14:44 GMT)
+    Gap to previous ts : 0.010019
+    Timespan: 871.998977 seconds (00:14:31.998 HMS.S)
+    Bytes   : 0
+    Records : 0
+
+Collection total time: 26111.062274 seconds (07:15:11.062 HMS.S)
+
+   This should start the SWICD publisher to distribute messages at that rate on the standard
+   PUB/SUB port (5555) from the FCU SWICD simulator system (10.32.40.188). You can use the 
+   Raven test client code to verify that this system is working
+
+   If there are problems I might have you look at the ravenSWICDsim.log that gets
+   created in the same directory once you run it but otherwise you can ignore this file.
+
+5. Run the Raven SWICD test client software to verify. A copy of the latest version 
+   of this software (swicd_client) is located in the ~/SWICD directory on the FCU SWICD 
+   simulator system. The dependencies have been built and the test client software
+   has been compiled. To run it while having the FCU SWICD simulator running to
+   confirm that the SWICD is valid do the following:
+
+   % cd ~/SWICD/swicd_client/build/src
+   % ./swicdTester -i --host localhost
+
+   You should see the following if the FCU SWICD emulator is running:
+
+   % ./swicdTester -i --host localhost
+Running the INS listener
+Subscribing to FCU message on tcp://localhost:5555
+Setting subscription filter for ins messages
+INS Message [addr=ins]: ts=1503061174.891982, lat=43.700363, lon=-96.707750, alt=428.897000, roll=-0.800000, pitch=1.400000, yaw=152.000000, decl=2.697586
+INS Message [addr=ins]: ts=1503061175.901881, lat=43.700363, lon=-96.707751, alt=428.740000, roll=-0.900000, pitch=1.500000, yaw=152.000000, decl=2.697708
+INS Message [addr=ins]: ts=1503061176.911751, lat=43.700363, lon=-96.707751, alt=428.558000, roll=-0.800000, pitch=1.500000, yaw=151.899994, decl=2.697850
+INS Message [addr=ins]: ts=1503061177.921649, lat=43.700363, lon=-96.707750, alt=428.491000, roll=-0.700000, pitch=1.400000, yaw=152.100006, decl=2.697902
+...
+
