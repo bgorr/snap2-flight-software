@@ -12,7 +12,7 @@ class VNIRCamera():
         self.st_datastream = self.st_device.create_datastream()
 
     def run_adaptive_exposure(self):
-        print("Running adaptive exposure!") # TODO
+        print("Running adaptive exposure!")
         img_quality = False
         while(img_quality == False):
             remote_nodemap = self.st_device.remote_port.nodemap
@@ -87,13 +87,13 @@ class VNIRCamera():
                 EXPOSURE_TIME_RAW_int = int(node_value.value)
                 EXPOSURE_TIME_RAW_int = 0.5*(EXPOSURE_TIME_RAW_int-expose_min)
                 print("New exposure time: ", EXPOSURE_TIME_RAW_int)
-                self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW)
+                self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW, EXPOSURE_TIME_RAW_int)
 
             elif under == True:
                 EXPOSURE_TIME_RAW_int = int(node_value.value)
                 EXPOSURE_TIME_RAW_int = 0.5*(EXPOSURE_TIME_RAW_int+expose_max)
                 print("New exposure time: ", EXPOSURE_TIME_RAW_int)
-                self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW)
+                self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW, EXPOSURE_TIME_RAW_int)
 
             else: pass
             if under == False and over == False:
@@ -131,7 +131,7 @@ class VNIRCamera():
         return (over,under)
 
 
-    def edit_setting(self,nodemap, node_name):
+    def edit_setting(self,nodemap, node_name, value):
         """
         Edit setting which has numeric type.
 
@@ -146,14 +146,14 @@ class VNIRCamera():
         elif node.principal_interface_type == st.EGCInterfaceType.IInteger:
             node_value = st.PyIInteger(node)
         while True:
-            print(node_name)
-            print(" Min={0} Max={1} Current={2}{3}".format(
-                node_value.min, node_value.max, node_value.value,
-                " Inc={0}".format(node_value.inc) if\
-                        node_value.inc_mode == st.EGCIncMode.FixedIncrement\
-                        else ""))
-            new_value = input("Enter a new value: ")
-            print()
+            # print(node_name)
+            # print(" Min={0} Max={1} Current={2}{3}".format(
+            #     node_value.min, node_value.max, node_value.value,
+            #     " Inc={0}".format(node_value.inc) if\
+            #             node_value.inc_mode == st.EGCIncMode.FixedIncrement\
+            #             else ""))
+            new_value = value
+            #print()
             if node.principal_interface_type == st.EGCInterfaceType.IFloat:
                 new_numeric_value = float(new_value)
             else:
