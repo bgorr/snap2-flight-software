@@ -2,15 +2,21 @@ import stapipy as st
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 class VNIRCamera():
     def __init__(self):
-        st.initialize()
-        st_system = st.create_system()
-        self.st_device = st_system.create_first_device()
-        self.camera_count = 200
-        self.st_datastream = self.st_device.create_datastream()
-
+        initialized = False
+        while not initialized:
+            try:
+                st.initialize()
+                st_system = st.create_system()
+                self.st_device = st_system.create_first_device()
+                self.camera_count = 100
+                self.st_datastream = self.st_device.create_datastream()
+                initialized = True
+            except:
+                print("retrying camera init")
     def run_adaptive_exposure(self):
         print("Running adaptive exposure!")
         img_quality = False
@@ -56,6 +62,8 @@ class VNIRCamera():
 
                         # Process image for display.
                         nparr = nparr.reshape(st_image.height, st_image.width, 1)
+                        image_tuple = self.demosaic(nparr)
+                        nparr = image_tuple[0]
                     else:
                         # If the acquired data contains no image data.
                         print("Image data does not exist.")
@@ -69,7 +77,7 @@ class VNIRCamera():
             EXPOSURE_TIME = "ExposureTime"
             EXPOSURE_TIME_RAW = "ExposureTimeRaw"
             AUTO_LIGHT_TARGET = "AutoLightTarget"
-            expose_max = 1000000
+            expose_max = 100000
             expose_min = 10
             over,under = self.check_img(nparr)
             if over == True:
@@ -100,7 +108,7 @@ class VNIRCamera():
                 img_quality = True
 
     def check_img(self,image):
-        tol = 50
+        tol = 15
         over = False
         under = False
         ctrl_std = 75
@@ -123,9 +131,9 @@ class VNIRCamera():
                     pass
                     p += 1
 
-            if hist1_maxpixel > 256/2:
+            if hist1_maxpixel > 256/2 or hist1_mean > 235:
                 over = True
-            elif hist1_maxpixel <= 256/2:
+            elif hist1_maxpixel <= 256/2 or hist1_mean < 20:
                 under = True
         else: pass
         return (over,under)

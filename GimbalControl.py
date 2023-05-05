@@ -144,7 +144,7 @@ class GimbalControl():
 
             # Calculate PID output
             output = self.Kp * error + self.Ki * error_sum * delta_time + self.Kd * delta_error / delta_time
-            output = 10
+            output = 20
             # Apply PID output to motor
             duty_cycle = max(min(output, 100), 0)  # Limit duty cycle to 0-100%
             self.motor_alt_pwm.ChangeDutyCycle(duty_cycle)
@@ -192,7 +192,7 @@ class GimbalControl():
 
             # Calculate PID output
             output = self.Kp * error + self.Ki * error_sum * delta_time + self.Kd * delta_error / delta_time
-            output = 10
+            output = 20
             # Apply PID output to motor
             duty_cycle = max(min(output, 100), 0)  # Limit duty cycle to 0-100%
             self.motor_az_pwm.ChangeDutyCycle(duty_cycle)
