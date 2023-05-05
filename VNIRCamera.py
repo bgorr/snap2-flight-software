@@ -2,14 +2,19 @@ import stapipy as st
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import logging
 
 class VNIRCamera():
     def __init__(self):
-        st.initialize()
-        st_system = st.create_system()
-        self.st_device = st_system.create_first_device()
-        self.camera_count = 200
-        self.st_datastream = self.st_device.create_datastream()
+        try:
+            st.initialize()
+            st_system = st.create_system()
+            self.st_device = st_system.create_first_device()
+            self.camera_count = 200
+            self.st_datastream = self.st_device.create_datastream()
+        except Exception:
+            logging.exception("Error initializing VNIR camera.")
+
 
     def run_adaptive_exposure(self):
         print("Running adaptive exposure!")

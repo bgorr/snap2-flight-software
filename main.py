@@ -10,12 +10,15 @@ import Controller
 import numpy as np
 import Jetson.GPIO as GPIO
 import os
+import logging
 
 def main():
+    
     directoryCount = 0
     directoryCreated = False
     while(directoryCreated == False):
         dirPath = "./runs/run"+str(directoryCount)
+        logging.basicConfig(filename='errors'+str(directoryCount)+'.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
         try:
             os.mkdir(dirPath)
             directoryCreated = True
