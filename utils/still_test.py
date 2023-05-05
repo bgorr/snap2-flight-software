@@ -12,15 +12,14 @@ import Jetson.GPIO as GPIO
 import os
 
 def main():
-    directoryCount = 0
     directoryCreated = False
     while(directoryCreated == False):
-        dirPath = "./runs/run"+str(directoryCount)
+        dirPath = "./camera_test"
         try:
             os.mkdir(dirPath)
             directoryCreated = True
         except:
-            directoryCount += 1
+            print("Directory already created!")
     try:
         controller = Controller.Controller(dirPath)
         for i in range(10):
