@@ -133,7 +133,7 @@ def run_motor_alt(target_alt_angle):
     last_error = 0
     last_time = time.time()
     # Loop until target angle is reached will stop when within 0.05 degree
-    while abs(altitude_angle - target_alt_angle) > .05:
+    while abs(altitude_angle - target_alt_angle) > .5:
         # Calculate error and error_sum
         error = target_alt_angle - altitude_angle
         error_sum += error
@@ -181,7 +181,7 @@ def run_motor_az(target_az_angle):
     last_error = 0
     last_time = time.time()
     # Loop until target angle is reached will stop when within 0.05 degree
-    while abs(azimuth_angle - target_az_angle) > 0.05:
+    while abs(azimuth_angle - target_az_angle) > 0.5:
         # Calculate error and error_sum
         error = target_az_angle - azimuth_angle
         error_sum += error
@@ -256,7 +256,7 @@ def zero_alt_angle_imu():
 
     imu_angles = IMU.IMU()
     roll = imu_angles.get_ypr()[2]
-    abs_angle = altitude_angle - roll
+    abs_angle = -(altitude_angle - roll)
     run_motor_alt(abs_angle)
     time.sleep(1)
 
@@ -270,7 +270,7 @@ enable_driver(en_pin)
 try:
 # first test manual control
     angles = np.arange(-10,10,2)
-    while True:
+    for i in range(2):
         for angle in angles:
             print('Az '+str(angle))
             run_motor_az(angle)

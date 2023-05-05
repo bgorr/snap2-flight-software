@@ -5,6 +5,7 @@ import os
 import io
 import numpy as np
 import IMU
+import sys
 
 # setup all pins
 motor_pin_alt = 33
@@ -135,7 +136,6 @@ def run_motor_alt(target_alt_angle):
     # Loop until target angle is reached will stop when within 0.05 degree
     while abs(altitude_angle - target_alt_angle) > .5:
         # Calculate error and error_sum
-        print(altitude_angle)
         error = target_alt_angle - altitude_angle
         error_sum += error
 
@@ -182,7 +182,7 @@ def run_motor_az(target_az_angle):
     last_error = 0
     last_time = time.time()
     # Loop until target angle is reached will stop when within 0.05 degree
-    while abs(azimuth_angle - target_az_angle) > 0.05:
+    while abs(azimuth_angle - target_az_angle) > 0.5:
         # Calculate error and error_sum
         error = target_az_angle - azimuth_angle
         error_sum += error
@@ -240,13 +240,13 @@ def scan_pattern():
 
 
 def plume_tracking():
-    # slew to plume position
+# slew to plume position
     while True:
         rel_plume_alt, rel_plume_az = get_plume_angles() #assuming this exists
-    # calculate absolute angle of plume
+# calculate absolute angle of plume
         abs_plume_alt = altitude_angle + rel_plume_alt
         abs_plume_az = azimuth_angle + rel_plume_az
-    # slew to plume
+# slew to plume
         run_motor_alt(abs_plume_alt)
         run_motor_az(abs_plume_az)
 
@@ -254,29 +254,10 @@ def plume_tracking():
 
 def zero_alt_angle_imu():
     global altitude_angle
-    imu_angles = IMU.IMU()
-    pitch_is_inverted = True
-    pre_test_roll = imu_angles.get_ypr()[2]
-    print(altitude_angle)
-    run_motor_alt(altitude_angle+5)
-    print(altitude_angle)
-    post_test_roll = imu_angles.get_ypr()[2]
-    if np.sign(pre_test_roll) == np.sign(post_test_roll):
-        if(post_test_roll < pre_test_roll):
-            pitch_is_inverted = False
-            print("pitch is not inverted!")
-    else:
-        print("Zero crossing! Try again!")
-        return
 
-    
+    imu_angles = IMU.IMU()
     roll = imu_angles.get_ypr()[2]
-    print("Roll: "+str(roll))
-    if pitch_is_inverted:
-        abs_angle = -(roll+altitude_angle)
-    else:
-        abs_angle = roll+altitude_angle
-    print("Moving to: "+str(abs_angle))
+    abs_angle = altitude_angle - roll
     run_motor_alt(abs_angle)
     time.sleep(1)
 
@@ -289,7 +270,10 @@ def zero_alt_angle_imu():
 enable_driver(en_pin)
 try:
 # first test manual control
-    zero_alt_angle_imu()
+    run_motor_az(float(sys.argv[1]))
+    run_motor_alt(float(sys.argv[2]))
+        
+
 
 #    time.sleep(1)
 #    run_motor_alt(0)

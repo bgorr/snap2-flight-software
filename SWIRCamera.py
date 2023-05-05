@@ -12,6 +12,7 @@ class SWIRCamera():
             return self.crop_center(frame,512,512)
         except Exception:
             logging.exception("Error taking SWIR image.")
+            return 0
 
     def crop_center(self,img,cropx,cropy):
         x = img.shape[1]

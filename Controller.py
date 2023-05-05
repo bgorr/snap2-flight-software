@@ -22,8 +22,10 @@ class Controller():
         self.plume_lost_count = 0
         self.image_path = dirpath+"/images/"
         self.telemetry_path = dirpath+"/telemetry/"
-        os.mkdir(self.image_path)
-        os.mkdir(self.telemetry_path)
+        if not os.path.exists(self.image_path):
+            os.mkdir(self.image_path)
+        if not os.path.exists(self.telemetry_path):
+            os.mkdir(self.telemetry_path)
         self.swir_cam = SWIRCamera.SWIRCamera()
         #watchdog = Watchdog.Watchdog()
 

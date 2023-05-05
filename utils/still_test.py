@@ -20,6 +20,7 @@ def main():
             directoryCreated = True
         except:
             print("Directory already created!")
+            directoryCreated = True
     try:
         controller = Controller.Controller(dirPath)
         for i in range(10):

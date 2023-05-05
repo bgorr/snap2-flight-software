@@ -94,12 +94,18 @@ class VNIRCamera():
                 
                 EXPOSURE_TIME_RAW_int = int(node_value.value)
                 EXPOSURE_TIME_RAW_int = 0.5*(EXPOSURE_TIME_RAW_int-expose_min)
+                if(np.abs(EXPOSURE_TIME_RAW_int - expose_min) < 10):
+                    print("At maximum exposure time! Is the camera lens still on?")
+                    return
                 print("New exposure time: ", EXPOSURE_TIME_RAW_int)
                 self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW, EXPOSURE_TIME_RAW_int)
 
             elif under == True:
                 EXPOSURE_TIME_RAW_int = int(node_value.value)
                 EXPOSURE_TIME_RAW_int = 0.5*(EXPOSURE_TIME_RAW_int+expose_max)
+                if(np.abs(EXPOSURE_TIME_RAW_int - expose_max) < 1000):
+                    print("At maximum exposure time! Is the camera lens still on?")
+                    return
                 print("New exposure time: ", EXPOSURE_TIME_RAW_int)
                 self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW, EXPOSURE_TIME_RAW_int)
 
@@ -108,7 +114,7 @@ class VNIRCamera():
                 img_quality = True
 
     def check_img(self,image):
-        tol = 15
+        tol = 65
         over = False
         under = False
         ctrl_std = 75
