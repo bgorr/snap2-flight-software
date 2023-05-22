@@ -1,5 +1,6 @@
 import cv2
 import logging
+import numpy as np
 
 class SWIRCamera():
     def __init__(self):
@@ -17,7 +18,11 @@ class SWIRCamera():
     def crop_center(self,img,cropx,cropy):
         x = img.shape[1]
         y = img.shape[0]
-        startx = x//2 - (cropx//2)
-        starty = y//2 - (cropy//2)
-        return img[starty:starty+cropy,startx:startx+cropx,0]
+        #startx = x//2 - (cropx//2)
+        #starty = y//2 - (cropy//2)
+        startx = x//2 - (cropx//2) - 15
+        starty = y//2 - (cropy//2) + 10
+        cropped = img[starty:starty+cropy,startx:startx+cropx,0]
+        cropped = np.flip(cropped)
+        return cropped
 
