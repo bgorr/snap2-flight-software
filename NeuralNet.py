@@ -35,7 +35,7 @@ def get_centroid(image):
                 x_sum = x_sum + i
                 y_sum = y_sum + j
                 count = count + 1
-    print("Number of plume pixels: "+count)
+    print("Number of plume pixels: "+str(count))
     if count > 0 and count < 1000:
         print("Plume detected!")
         x_loc = x_sum/count
@@ -51,27 +51,29 @@ def preprocess(bands):
 
 class NeuralNet():
     def __init__(self,nn_setting,num_bands):
+        self.num_bands = num_bands
+        self.nn_setting = nn_setting
         if num_bands == 3:
             if nn_setting == "skeptical":
-                self.nn = torch.jit.load("./trainednet_3s.pt")
+                self.nn = torch.jit.load("./trained_net_3s.pt")
             else:
-                self.nn = torch.jit.load("./trainednet_3o.pt")
+                self.nn = torch.jit.load("./trained_net_3o.pt")
         elif num_bands == 4:
             if nn_setting == "skeptical":
-                self.nn = torch.jit.load("./trainednet_4s.pt")
+                self.nn = torch.jit.load("./trained_net_4s.pt")
             else:
-                self.nn = torch.jit.load("./trainednet_4o.pt")
+                self.nn = torch.jit.load("./trained_net_4o.pt")
         else:
             if nn_setting == "skeptical":
-                self.nn = torch.jit.load("./trainednet_5s.pt")
+                self.nn = torch.jit.load("./trained_net_5s.pt")
             else:
-                self.nn = torch.jit.load("./trainednet_5o.pt")
-        self.nn_3s = torch.jit.load("./trainednet_3s.pt")
-        self.nn_4s = torch.jit.load("./trainednet_4s.pt")
-        self.nn_5s = torch.jit.load("./trainednet_5s.pt")
-        self.nn_3o = torch.jit.load("./trainednet_3o.pt")
-        self.nn_4o = torch.jit.load("./trainednet_4o.pt")
-        self.nn_5o = torch.jit.load("./trainednet_5o.pt")
+                self.nn = torch.jit.load("./trained_net_5o.pt")
+        self.nn_3s = torch.jit.load("./trained_net_3s.pt")
+        self.nn_4s = torch.jit.load("./trained_net_4s.pt")
+        self.nn_5s = torch.jit.load("./trained_net_5s.pt")
+        self.nn_3o = torch.jit.load("./trained_net_3o.pt")
+        self.nn_4o = torch.jit.load("./trained_net_4o.pt")
+        self.nn_5o = torch.jit.load("./trained_net_5o.pt")
     def perform_inference_3bands_skeptical(self,input):
         output = self.nn_3s.forward(input)
         outputSigmoid = torch.sigmoid(output)
@@ -102,7 +104,7 @@ class NeuralNet():
         outputSigmoid = torch.sigmoid(output)
         outputThreshold = torch.gt(outputSigmoid,0.4)
         return outputThreshold[0][0]
-    
+
     def run_nn(self,vnir_image,swir_image):
         processed_bands = preprocess(vnir_image)
         swir_processed = preprocess(swir_image)
@@ -110,7 +112,41 @@ class NeuralNet():
         green_tiles = tile_images(processed_bands[1])
         blue_tiles = tile_images(processed_bands[2])
         nir_tiles = tile_images(processed_bands[3])
-        swir_tiles = tile_images(swir_processed)
+        swir_tiles = tile_images(swir_processed.copy())
+        mask_tiles = []
+        for i in range(20):
+            if self.num_bands == 3:
+                stacked_tensor_3bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float())) # np has float64, need float
+                if self.nn_setting == "skeptical":
+                    mask_tiles.append(self.perform_inference_3bands_skeptical(torch.unsqueeze(stacked_tensor_3bands,0)))
+                else:
+                    mask_tiles.append(self.perform_inference_3bands_optimistic(torch.unsqueeze(stacked_tensor_3bands,0)))
+            elif self.num_bands == 4:
+                stacked_tensor_4bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float(),torch.from_numpy(nir_tiles[i]).float())) # np has float64, need float
+                if self.nn_setting == "skeptical":
+                    mask_tiles.append(self.perform_inference_4bands_skeptical(torch.unsqueeze(stacked_tensor_4bands,0)))
+                else:
+                    mask_tiles.append(self.perform_inference_4bands_optimistic(torch.unsqueeze(stacked_tensor_4bands,0)))
+            else:
+                stacked_tensor_5bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float(),torch.from_numpy(nir_tiles[i]).float(),torch.from_numpy(swir_tiles[i]).float()))
+                if self.nn_setting == "skeptical":
+                    mask_tiles.append(self.perform_inference_5bands_skeptical(torch.unsqueeze(stacked_tensor_5bands,0)))
+                else:
+                    mask_tiles.append(self.perform_inference_5bands_optimistic(torch.unsqueeze(stacked_tensor_5bands,0)))
+            
+        full_mask = untile_mask(mask_tiles)
+        (x,y) = get_centroid(full_mask)
+        return full_mask, x, y
+        
+    
+    def run_all_nns(self,vnir_image,swir_image):
+        processed_bands = preprocess(vnir_image)
+        swir_processed = preprocess(swir_image)
+        red_tiles = tile_images(processed_bands[0])
+        green_tiles = tile_images(processed_bands[1])
+        blue_tiles = tile_images(processed_bands[2])
+        nir_tiles = tile_images(processed_bands[3])
+        swir_tiles = tile_images(swir_processed.copy())
         mask_tiles_3s = []
         mask_tiles_3o = []
         mask_tiles_4s = []
@@ -121,11 +157,10 @@ class NeuralNet():
             stacked_tensor_3bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float())) # np has float64, need float
             stacked_tensor_4bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float(),torch.from_numpy(nir_tiles[i]).float())) # np has float64, need float
             stacked_tensor_5bands = torch.stack((torch.from_numpy(red_tiles[i]).float(),torch.from_numpy(green_tiles[i]).float(),torch.from_numpy(blue_tiles[i]).float(),torch.from_numpy(nir_tiles[i]).float(),torch.from_numpy(swir_tiles[i]).float())) # np has float64, need float
-            #final_tensor = torch.stack((stacked_tensor))
-            mask_tiles_3o.append(self.perform_inference_5bands_optimistic(torch.unsqueeze(stacked_tensor_3bands,0)))
-            mask_tiles_3s.append(self.perform_inference_5bands_skeptical(torch.unsqueeze(stacked_tensor_3bands,0)))
-            mask_tiles_4o.append(self.perform_inference_5bands_optimistic(torch.unsqueeze(stacked_tensor_4bands,0)))
-            mask_tiles_4s.append(self.perform_inference_5bands_skeptical(torch.unsqueeze(stacked_tensor_4bands,0)))
+            mask_tiles_3o.append(self.perform_inference_3bands_optimistic(torch.unsqueeze(stacked_tensor_3bands,0)))
+            mask_tiles_3s.append(self.perform_inference_3bands_skeptical(torch.unsqueeze(stacked_tensor_3bands,0)))
+            mask_tiles_4o.append(self.perform_inference_4bands_optimistic(torch.unsqueeze(stacked_tensor_4bands,0)))
+            mask_tiles_4s.append(self.perform_inference_4bands_skeptical(torch.unsqueeze(stacked_tensor_4bands,0)))
             mask_tiles_5o.append(self.perform_inference_5bands_optimistic(torch.unsqueeze(stacked_tensor_5bands,0)))
             mask_tiles_5s.append(self.perform_inference_5bands_skeptical(torch.unsqueeze(stacked_tensor_5bands,0)))
         full_mask_3s = untile_mask(mask_tiles_3s)

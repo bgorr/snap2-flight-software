@@ -1,7 +1,7 @@
 {
-    "exposure_time_setting": "automatic",
+    "exposure_time_setting": "manual",
     "exposure_time": 1000,
-    "number_of_bands": 5,
-    "neural_net_option": "skeptical",
-    "scanning": "enabled"
+    "number_of_bands": 3,
+    "neural_net_option": "optimistic",
+    "scanning": "disabled"
 }

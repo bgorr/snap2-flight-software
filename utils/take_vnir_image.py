@@ -2,7 +2,7 @@ import VNIRCamera
 import numpy as np
 from PIL import Image
 
-vnir_cam = VNIRCamera.VNIRCamera()
+vnir_cam = VNIRCamera.VNIRCamera(0)
 vnir_cam.get_image()
 vnir_image = vnir_cam.get_image()
 

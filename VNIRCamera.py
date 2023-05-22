@@ -8,8 +8,11 @@ class VNIRCamera():
     def __init__(self,exposure_time):
         initialized = False
         if(exposure_time != 0):
-            self.exposure_time = exposure_time # in us
+            self.exposure_time = float(exposure_time) # in us
             self.adaptive_exposure = False
+        else:
+            self.exposure_time = 0
+            self.adaptive_exposure = True
         while not initialized:
             try:
                 st.initialize()
@@ -17,9 +20,12 @@ class VNIRCamera():
                 self.st_device = st_system.create_first_device()
                 self.camera_count = 100
                 self.st_datastream = self.st_device.create_datastream()
-                self.set_exposure_time()
+                if self.exposure_time != 0:
+                    self.set_exposure_time()
                 initialized = True
-            except:
+            except Exception as e:
+                print(e)
+                e.printStackTrace()
                 print("retrying camera init")
     def run_adaptive_exposure(self):
         print("Running adaptive exposure!")
