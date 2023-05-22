@@ -11,9 +11,12 @@ import numpy as np
 import Jetson.GPIO as GPIO
 import os
 import logging
+import json
+import time
 
 def main():
-    
+    f = open('sim_settings.json')
+    settings = json.load(f)
     directoryCount = 0
     directoryCreated = False
     while(directoryCreated == False):
@@ -25,11 +28,16 @@ def main():
         except:
             directoryCount += 1
     try:
-        controller = Controller.Controller(dirPath)
+        controller = Controller.Controller(dirPath,settings)
         gc = GimbalControl.GimbalControl()
-        gc.enable_driver()
-        while True:
-            gc.scan_pattern(controller)
+        if settings["scanning"] == "enabled":
+            gc.enable_driver()
+            while True:
+                gc.scan_pattern(controller)
+        else:
+            while True:
+                controller.data_capture((0,0))
+                time.sleep(1)
     except Exception as e:
         gc.motor_alt_pwm.stop()
         gc.motor_az_pwm.stop()
@@ -37,7 +45,7 @@ def main():
         e.printStackTrace()
         GPIO.cleanup()
     finally:
-        gc.motor_alt_pwm.stop()
+        gc.motor_alt_pwm.stop() 
         gc.motor_az_pwm.stop()
         GPIO.cleanup()
         

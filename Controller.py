@@ -10,11 +10,16 @@ import numpy as np
 import os
 
 class Controller():
-    def __init__(self,dirpath):
+    def __init__(self,dirpath,settings):
         self.count = 0
+        self.settings = settings
+        if self.settings["exposure_time_setting"] == "automatic":
+            self.exposure_time = 0
+        else:
+            self.exposure_time = self.settings["exposure_time"]
         self.imu = IMU.IMU()
-        self.vnir_cam = VNIRCamera.VNIRCamera()
-        self.neural_net = NeuralNet.NeuralNet()
+        self.vnir_cam = VNIRCamera.VNIRCamera(self.exposure_time)
+        self.neural_net = NeuralNet.NeuralNet(self.settings["neural_net_option"],self.settings["number_of_bands"])
         self.ins_messages = INSMessages.INSMessages()
         self.thermal = Thermal.Thermal()
         self.plume_state = False
@@ -45,10 +50,9 @@ class Controller():
             np.savetxt(self.image_path+"swir_"+str(count)+".csv", swir_image.astype(int), delimiter=",",fmt="%d")
 
     def data_capture(self,gc_angles):
-        telemetry = []
         swir_image = self.swir_cam.take_image()
         vnir_image = self.vnir_cam.get_image()
-        mask, x, y = self.neural_net.run_nn(vnir_image)
+        mask, x, y = self.neural_net.run_nn(vnir_image,swir_image)
         self.plume_pos = (x,y)
         if x != 0 or y != 0:
             self.plume_state = True

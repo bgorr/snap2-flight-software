@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 class VNIRCamera():
-    def __init__(self):
+    def __init__(self,exposure_time):
         initialized = False
+        if(exposure_time != 0):
+            self.exposure_time = exposure_time # in us
+            self.adaptive_exposure = False
         while not initialized:
             try:
                 st.initialize()
@@ -14,6 +17,7 @@ class VNIRCamera():
                 self.st_device = st_system.create_first_device()
                 self.camera_count = 100
                 self.st_datastream = self.st_device.create_datastream()
+                self.set_exposure_time()
                 initialized = True
             except:
                 print("retrying camera init")
@@ -113,6 +117,11 @@ class VNIRCamera():
             if under == False and over == False:
                 img_quality = True
 
+    def set_exposure_time(self):
+        remote_nodemap = self.st_device.remote_port.nodemap
+        EXPOSURE_TIME_RAW = "ExposureTimeRaw"
+        self.edit_setting(remote_nodemap, EXPOSURE_TIME_RAW, self.exposure_time)
+
     def check_img(self,image):
         tol = 65
         over = False
@@ -177,7 +186,7 @@ class VNIRCamera():
                 return
     
     def get_image(self):
-        if self.camera_count > 100:
+        if self.camera_count > 100 and self.adaptive_exposure:
             self.run_adaptive_exposure()
             self.camera_count = 0
 
